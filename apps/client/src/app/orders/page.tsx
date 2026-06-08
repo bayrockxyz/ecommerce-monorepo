@@ -14,17 +14,26 @@ const fetchOrders = async () => {
     },
   );
 
+  // const data: OrderType[] = await res.json();
+  // return data;
+
+  if (!res.ok) return [];
+
   const data: OrderType[] = await res.json();
-  return data;
+  // ✅ Guard against non-array responses
+  return Array.isArray(data) ? data : [];
 };
 
 const OrdersPage = async () => {
   const orders = await fetchOrders();
 
-  if (!orders) {
-    return <div className="">No orders found!</div>;
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="text-gray-500 text-sm">No orders found!</p>
+      </div>
+    );
   }
-
   console.log(orders);
   return (
     <div className="">

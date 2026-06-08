@@ -2,24 +2,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "./SearchBar";
-import { Bell, Home, LogIn, LogOut, Settings, User } from "lucide-react";
+import { Bell, Home, LogIn } from "lucide-react";
 import ShoppingCartIcon from "./ShoppingCartIcon";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
+import ProfileButton from "./ProfileButton";
 
 const Navbar = () => {
-  const { signOut, openSignIn, openUserProfile } = useClerk();
-  const { user, isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
+  const { isSignedIn } = useUser();
   const router = useRouter();
 
   return (
@@ -49,38 +41,8 @@ const Navbar = () => {
 
         {/* USER MENU */}
         {isSignedIn ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Avatar className="w-8 h-8 cursor-pointer">
-                <AvatarImage src={user?.imageUrl} />
-                <AvatarFallback>
-                  {user?.firstName?.charAt(0)}
-                  {user?.lastName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent sideOffset={10} align="end">
-              <DropdownMenuLabel>
-                {user?.fullName || user?.username || "My Account"}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => openUserProfile()}>
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => openUserProfile()}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => signOut(() => router.push("/"))}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          // ✅ UserButton handles avatar + dropdown with "See Orders" inside
+          <ProfileButton />
         ) : (
           <Button
             variant="outline"

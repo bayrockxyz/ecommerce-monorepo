@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ShippingFormInputs } from "@repo/types";
 import useCartStore from "@/stores/cartStore";
 
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
+// const PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
 
 const PaystackPaymentForm = ({
   shippingForm,
@@ -25,7 +25,10 @@ const PaystackPaymentForm = ({
         `${process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL}/sessions/create-checkout-session`,
         {
           method: "POST",
-          body: JSON.stringify({ cart }),
+          body: JSON.stringify({
+            cart,
+            shippingAddress: shippingForm.address,
+          }),
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

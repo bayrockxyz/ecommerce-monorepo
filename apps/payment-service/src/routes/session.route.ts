@@ -3,6 +3,7 @@ import { createClerkClient } from "@clerk/backend";
 import { shouldBeUser } from "../middleware/authMiddleware";
 import { CartItemsType } from "@repo/types";
 import axios from "axios";
+import { producer } from "../utils/kafka";
 
 const sessionRoute = new Hono();
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY as string;
@@ -12,7 +13,7 @@ const clerk = createClerkClient({
 });
 
 sessionRoute.post("/create-checkout-session", shouldBeUser, async (c) => {
-  const { cart }: { cart: CartItemsType } = await c.req.json();
+  const { cart, shippingAddress, }: { cart: CartItemsType; shippingAddress: string, } = await c.req.json();
   const userId = c.get("userId");
 
   // ✅ Fetch user from Clerk backend SDK
@@ -37,12 +38,14 @@ sessionRoute.post("/create-checkout-session", shouldBeUser, async (c) => {
         currency: "NGN",
         metadata: {
           userId,
+          shippingAddress,
           cart: cart.map((item) => ({
             id: item.id,
             name: item.name,
             quantity: item.quantity,
             price: item.price,
           })),
+          
         },
         callback_url: `${process.env.CLIENT_URL}/return`
       },
@@ -76,10 +79,50 @@ sessionRoute.get("/:reference", async (c) => {
       }
     );
 
-    const { status, gateway_response } = response.data.data;
+    const { status, gateway_response, amount, metadata } = response.data.data;
+    
+    // ✅ Add this to see what Paystack returns
+    console.log("Paystack metadata:", JSON.stringify(metadata, null, 2));
+
+
+        // ✅ Publish to Kafka so order service creates the order
+    if (status === "success") {
+      const user = await clerk.users.getUser(metadata.userId);
+      const email = user.emailAddresses[0]?.emailAddress ?? "";
+
+      const kafkaPayload = {
+        userId: metadata.userId,
+        email,
+        amount,
+        status: "success",
+        products: metadata.cart.map((item: any) => ({
+        ...item,
+        shippingAddress: metadata.shippingAddress,
+      })),
+      };
+      console.log("Publishing to Kafka:", JSON.stringify(kafkaPayload, null, 2));
+
+      await producer.send("payment.successful", { value: kafkaPayload });
+
+    // await producer.send("payment.successful", {
+    //   value: {
+    //   userId: metadata.userId,
+    //   email,
+    //   amount,
+    //   status: "success",
+    //   products: metadata.cart.map((item: any) => ({
+    //     ...item,
+    //     shippingAddress: metadata.shippingAddress, // ✅ attach from top-level
+    //   })),
+    // },
+    }
+
     return c.json({
       status,
       paymentStatus: gateway_response,
+      amount,
+      cart: metadata.cart,
+      userId: metadata.userId,
     });
   } catch (error) {
     console.log(error);
