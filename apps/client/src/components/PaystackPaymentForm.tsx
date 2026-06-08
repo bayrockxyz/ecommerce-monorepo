@@ -1,10 +1,8 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ShippingFormInputs } from "@repo/types";
 import useCartStore from "@/stores/cartStore";
-
-// const PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
 
 const PaystackPaymentForm = ({
   shippingForm,
@@ -37,7 +35,7 @@ const PaystackPaymentForm = ({
       );
       const json = await response.json();
       if (json.authorization_url) {
-        // ✅ Redirect to Paystack hosted payment page
+        // Redirect to Paystack hosted payment page
         window.location.href = json.authorization_url;
       } else {
         setError("Failed to initialize payment. Please try again.");

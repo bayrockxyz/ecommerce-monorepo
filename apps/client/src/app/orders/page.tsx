@@ -14,9 +14,6 @@ const fetchOrders = async () => {
     },
   );
 
-  // const data: OrderType[] = await res.json();
-  // return data;
-
   if (!res.ok) return [];
 
   const data: OrderType[] = await res.json();

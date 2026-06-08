@@ -16,7 +16,7 @@ sessionRoute.post("/create-checkout-session", shouldBeUser, async (c) => {
   const { cart, shippingAddress, }: { cart: CartItemsType; shippingAddress: string, } = await c.req.json();
   const userId = c.get("userId");
 
-  // ✅ Fetch user from Clerk backend SDK
+  // Fetch user from Clerk backend SDK
   const user = await clerk.users.getUser(userId);
   const email = user.emailAddresses[0]?.emailAddress;
 
@@ -26,7 +26,7 @@ sessionRoute.post("/create-checkout-session", shouldBeUser, async (c) => {
 
   // Calculate total amount in kobo (Paystack uses smallest currency unit)
   const totalAmount = cart.reduce((sum, item) => {
-    return sum + item.price * item.quantity * 100; // convert to kobo
+    return sum + item.price * item.quantity * 100;
   }, 0);
 
   try {
@@ -80,43 +80,25 @@ sessionRoute.get("/:reference", async (c) => {
     );
 
     const { status, gateway_response, amount, metadata } = response.data.data;
-    
-    // ✅ Add this to see what Paystack returns
-    console.log("Paystack metadata:", JSON.stringify(metadata, null, 2));
 
-
-        // ✅ Publish to Kafka so order service creates the order
+    // Publish to Kafka so order service creates the order
     if (status === "success") {
-      const user = await clerk.users.getUser(metadata.userId);
-      const email = user.emailAddresses[0]?.emailAddress ?? "";
+    const user = await clerk.users.getUser(metadata.userId);
+    const email = user.emailAddresses[0]?.emailAddress ?? "";
 
-      const kafkaPayload = {
+    await producer.send("payment.successful", {
+      value: {
         userId: metadata.userId,
         email,
         amount,
         status: "success",
         products: metadata.cart.map((item: any) => ({
-        ...item,
-        shippingAddress: metadata.shippingAddress,
-      })),
-      };
-      console.log("Publishing to Kafka:", JSON.stringify(kafkaPayload, null, 2));
-
-      await producer.send("payment.successful", { value: kafkaPayload });
-
-    // await producer.send("payment.successful", {
-    //   value: {
-    //   userId: metadata.userId,
-    //   email,
-    //   amount,
-    //   status: "success",
-    //   products: metadata.cart.map((item: any) => ({
-    //     ...item,
-    //     shippingAddress: metadata.shippingAddress, // ✅ attach from top-level
-    //   })),
-    // },
-    }
-
+          ...item,
+          shippingAddress: metadata.shippingAddress, // ✅ attach from top-level
+        })),
+      },
+    });
+  }
     return c.json({
       status,
       paymentStatus: gateway_response,

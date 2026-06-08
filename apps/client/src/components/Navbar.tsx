@@ -5,14 +5,12 @@ import SearchBar from "./SearchBar";
 import { Bell, Home, LogIn } from "lucide-react";
 import ShoppingCartIcon from "./ShoppingCartIcon";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import ProfileButton from "./ProfileButton";
 
 const Navbar = () => {
   const { openSignIn } = useClerk();
   const { isSignedIn } = useUser();
-  const router = useRouter();
 
   return (
     <nav className="w-full flex items-center justify-between border-b border-gray-200 pb-4">
