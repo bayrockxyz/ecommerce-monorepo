@@ -21,15 +21,20 @@ export const createKafkaClient = (service: string) => {
   if (!username) throw new Error(`[${service}] KAFKA_USERNAME is not set`);
   if (!password) throw new Error(`[${service}] KAFKA_PASSWORD is not set`);
 
-  return new Kafka({
-    clientId: service,
-    brokers: brokers.split(","),
-    ssl: true,
-    sasl: {
-      mechanism: "plain",
-      username,
-      password,
-    },
-    logLevel: logLevel.ERROR,
-  });
+return new Kafka({
+  clientId: service,
+  brokers: brokers.split(","),
+  ssl: {
+    rejectUnauthorized: true,
+    ca: process.env.KAFKA_CA_CERT
+      ? [Buffer.from(process.env.KAFKA_CA_CERT, "base64").toString("utf-8")]
+      : undefined,
+  },
+  sasl: {
+    mechanism: "plain",
+    username,
+    password,
+  },
+  logLevel: logLevel.ERROR,
+});
 };
