@@ -6,10 +6,9 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "app/generated/**"],
       "env": [
-          "REDPANDA_BROKERS",
-          "REDPANDA_USERNAME", 
-          "REDPANDA_PASSWORD",
-          "REDPANDA_SASL_MECHANISM",
+          "KAFKA_BROKERS",
+          "KAFKA_USERNAME", 
+          "KAFKA_PASSWORD",
           "CLERK_SECRET_KEY",
           "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
           "CLERK_PUBLISHABLE_KEY",

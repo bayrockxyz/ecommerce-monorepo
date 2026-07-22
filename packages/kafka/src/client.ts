@@ -9,22 +9,24 @@
 
 
 import { Kafka, logLevel } from "kafkajs";
+import * as fs from "fs";
+import * as path from "path";
 
 export const createKafkaClient = (service: string) => {
-  const brokers = process.env.REDPANDA_BROKERS;
-  const username = process.env.REDPANDA_USERNAME;
-  const password = process.env.REDPANDA_PASSWORD;
+  const brokers = process.env.KAFKA_BROKERS;
+  const username = process.env.KAFKA_USERNAME;
+  const password = process.env.KAFKA_PASSWORD;
 
-  if (!brokers) throw new Error(`[${service}] REDPANDA_BROKERS env var is not set`);
-  if (!username) throw new Error(`[${service}] REDPANDA_USERNAME env var is not set`);
-  if (!password) throw new Error(`[${service}] REDPANDA_PASSWORD env var is not set`);
+  if (!brokers) throw new Error(`[${service}] KAFKA_BROKERS is not set`);
+  if (!username) throw new Error(`[${service}] KAFKA_USERNAME is not set`);
+  if (!password) throw new Error(`[${service}] KAFKA_PASSWORD is not set`);
 
   return new Kafka({
     clientId: service,
-    brokers: brokers.split(","), // supports multiple brokers if needed
-    ssl: true,                   // Redpanda Cloud requires TLS
+    brokers: brokers.split(","),
+    ssl: true,
     sasl: {
-      mechanism: "scram-sha-256",
+      mechanism: "plain",
       username,
       password,
     },
