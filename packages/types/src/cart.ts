@@ -7,6 +7,14 @@ export type CartItemType = Product & {
   selectedColor: string;
 };
 
+// export type CartItemType = Omit<Product, "sizes" | "colors"> & {
+//   sizes: string[];
+//   colors: string[];
+//   quantity: number;
+//   selectedSize: string;
+//   selectedColor: string;
+// };
+
 export type CartItemsType = CartItemType[];
 
 export const shippingFormSchema = z.object({
